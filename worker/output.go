@@ -29,6 +29,7 @@ type OutPut struct {
 	path string
 	f    *xlsx.File
 	sheet *xlsx.Sheet
+	fs   []*Finalize
 }
 
 func NewOutPut(path string) *OutPut {
@@ -45,53 +46,55 @@ func NewOutPut(path string) *OutPut {
 		cell.Value = title
 	}
 
-	return &OutPut{f: f, sheet: sheet, path: path}
+	return &OutPut{f: f, sheet: sheet, path: path, fs: make([]*Finalize, 0, 1000)}
 }
 
 func (o *OutPut) Write(f *Finalize) {
 	r := o.sheet.AddRow()
 	cell := r.AddCell()
 	// timestamp
-	cell.Value = f.TimeStamp
+	cell.SetDateTime(f.TimeStamp)
 	cell = r.AddCell()
 	// TPS
-	cell.Value = fmt.Sprintf("%6.2f", f.TPS)
+	cell.SetFloat(f.TPS)
 	cell = r.AddCell()
 	// avg
-	cell.Value = fmt.Sprintf("%6.5f", f.AvgDelay)
+	cell.SetFloat(f.AvgDelay)
 	cell = r.AddCell()
 	// success
-	cell.Value = fmt.Sprintf("%d", f.Success)
+	cell.SetInt64(f.Success)
 	cell = r.AddCell()
 	// fail
-	cell.Value = fmt.Sprintf("%d", f.Err)
+	cell.SetInt64(f.Err)
 	cell = r.AddCell()
 	// TP10
-	cell.Value = fmt.Sprintf("%g", f.TP10)
+	cell.SetFloat(f.TP10)
 	cell = r.AddCell()
 	// TP25
-	cell.Value = fmt.Sprintf("%g", f.TP25)
+	cell.SetFloat(f.TP25)
 	cell = r.AddCell()
 	// TP50
-	cell.Value = fmt.Sprintf("%g", f.TP50)
+	cell.SetFloat(f.TP50)
 	cell = r.AddCell()
 	// TP75
-	cell.Value = fmt.Sprintf("%g", f.TP75)
+	cell.SetFloat(f.TP75)
 	cell = r.AddCell()
 	// TP90
-	cell.Value = fmt.Sprintf("%g", f.TP90)
+	cell.SetFloat(f.TP90)
 	cell = r.AddCell()
 	// TP95
-	cell.Value = fmt.Sprintf("%g", f.TP95)
+	cell.SetFloat(f.TP95)
 	cell = r.AddCell()
 	// TP99
-	cell.Value = fmt.Sprintf("%g", f.TP99)
+	cell.SetFloat(f.TP99)
+	o.fs = append(o.fs, f)
 }
 
 func (o *OutPut) Save() {
 	err := o.f.Save(path.Join(o.path, fmt.Sprintf("output_%s.xlsx", time.Now().Format(time.RFC3339))))
 	if err != nil {
 		fmt.Println("save output file failed ", err)
+		os.Exit(-1)
 	}
 }
 

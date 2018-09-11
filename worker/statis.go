@@ -60,7 +60,7 @@ func (i *interim) finalize(total time.Duration) *Finalize {
 	ls := latencies(i.lats)
 
 	f := &Finalize{
-		TimeStamp: time.Now().Format(time.RFC3339),
+		TimeStamp: time.Now(),
 		TPS: tps,
 		AvgDelay: average,
 		Success: i.successCount,
@@ -89,7 +89,7 @@ func (i *interim) finalize(total time.Duration) *Finalize {
 }
 
 type Finalize struct {
-	TimeStamp string        `json:"timestamp"`
+	TimeStamp time.Time     `json:"timestamp"`
 	TPS       float64       `json:"tps"`
 	AvgDelay  float64       `json:"avg_delay"`
 	Success   int64         `json:"success"`
