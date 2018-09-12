@@ -87,7 +87,6 @@ func (o *OutPut) Write(f *Finalize) {
 	cell = r.AddCell()
 	// TP99
 	cell.SetFloat(f.TP99)
-	o.fs = append(o.fs, f)
 }
 
 func (o *OutPut) Save() {
