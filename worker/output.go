@@ -51,41 +51,42 @@ func NewOutPut(path string) *OutPut {
 
 func (o *OutPut) Write(f *Finalize) {
 	r := o.sheet.AddRow()
-	cell := r.AddCell()
+
 	// timestamp
+	cell := r.AddCell()
 	cell.SetDateTime(f.TimeStamp)
-	cell = r.AddCell()
 	// TPS
+	cell = r.AddCell()
 	cell.SetFloat(f.TPS)
-	cell = r.AddCell()
 	// avg
+	cell = r.AddCell()
 	cell.SetFloat(f.AvgDelay)
-	cell = r.AddCell()
 	// success
+	cell = r.AddCell()
 	cell.SetInt64(f.Success)
-	cell = r.AddCell()
 	// fail
+	cell = r.AddCell()
 	cell.SetInt64(f.Err)
-	cell = r.AddCell()
 	// TP10
+	cell = r.AddCell()
 	cell.SetFloat(f.TP10)
-	cell = r.AddCell()
 	// TP25
+	cell = r.AddCell()
 	cell.SetFloat(f.TP25)
-	cell = r.AddCell()
 	// TP50
+	cell = r.AddCell()
 	cell.SetFloat(f.TP50)
-	cell = r.AddCell()
 	// TP75
+	cell = r.AddCell()
 	cell.SetFloat(f.TP75)
-	cell = r.AddCell()
 	// TP90
+	cell = r.AddCell()
 	cell.SetFloat(f.TP90)
-	cell = r.AddCell()
 	// TP95
-	cell.SetFloat(f.TP95)
 	cell = r.AddCell()
+	cell.SetFloat(f.TP95)
 	// TP99
+	cell = r.AddCell()
 	cell.SetFloat(f.TP99)
 }
 

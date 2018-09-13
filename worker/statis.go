@@ -15,6 +15,7 @@ package worker
 
 import (
 	"time"
+	"sort"
 )
 
 var startTime = time.Now()
@@ -57,6 +58,8 @@ func (i *interim) finalize(total time.Duration) *Finalize {
 	tps := float64(i.numRes) / total.Seconds()
 	l := len(i.lats)
 	average := i.avgTotal / float64(l)
+	// sort
+	sort.Float64s(i.lats)
 	ls := latencies(i.lats)
 
 	f := &Finalize{
@@ -115,11 +118,13 @@ func latencies(lats []float64) []LatencyDistribution {
 			j++
 		}
 	}
+	// pending
+	for i := j; i < len(pctls) && j > 0; i++ {
+		data[i] = data[i-1]
+	}
 	res := make([]LatencyDistribution, len(pctls))
 	for i := 0; i < len(pctls); i++ {
-		if data[i] > 0 {
-			res[i] = LatencyDistribution{Percentage: pctls[i], Latency: data[i]}
-		}
+		res[i] = LatencyDistribution{Percentage: pctls[i], Latency: data[i]}
 	}
 	return res
 }
