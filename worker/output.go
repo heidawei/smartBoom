@@ -89,6 +89,7 @@ func (o *OutPut) Write(f *Finalize) {
 	// TP99
 	cell = r.AddCell()
 	cell.SetFloat(f.TP99)
+	fmt.Printf("====>>TPS: %f, avgDelay: %fms, TP99: %fms\n", f.TPS, f.AvgDelay, f.TP99)
 }
 
 func (o *OutPut) Save() {
