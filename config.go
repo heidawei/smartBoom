@@ -14,6 +14,7 @@
 package main
 
 import (
-	_ "github.com/heidawei/smartBoom/executor/http"
-	_ "github.com/heidawei/actuator/partitionserver"
+	//_ "github.com/heidawei/smartBoom/executor/http"
+	//_ "github.com/heidawei/actuator/partitionserver"
+	_ "github.com/heidawei/actuator/scorch"
 )
