@@ -29,7 +29,7 @@ type OutPut struct {
 	path string
 	f    *xlsx.File
 	sheet *xlsx.Sheet
-	fs   []*Finalize
+	options xlsx.DateTimeOptions
 }
 
 func NewOutPut(path string) *OutPut {
@@ -45,8 +45,9 @@ func NewOutPut(path string) *OutPut {
 		cell := r.AddCell()
 		cell.Value = title
 	}
-
-	return &OutPut{f: f, sheet: sheet, path: path, fs: make([]*Finalize, 0, 1000)}
+	l, _ := time.LoadLocation("Local")
+	options := xlsx.DateTimeOptions{Location: l, ExcelTimeFormat: "h:mm:ss"}
+	return &OutPut{f: f, sheet: sheet, path: path, options: options}
 }
 
 func (o *OutPut) Write(f *Finalize) {
@@ -54,7 +55,7 @@ func (o *OutPut) Write(f *Finalize) {
 
 	// timestamp
 	cell := r.AddCell()
-	cell.SetDateTime(f.TimeStamp)
+	cell.SetDateWithOptions(f.TimeStamp, o.options)
 	// TPS
 	cell = r.AddCell()
 	cell.SetFloat(f.TPS)
