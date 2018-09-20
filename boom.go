@@ -20,9 +20,12 @@ import (
 	"os"
 	"os/signal"
 	"time"
+	"math"
+	"context"
 
 	"github.com/heidawei/smartBoom/worker"
 	"github.com/dustin/gojson"
+	"runtime/pprof"
 )
 
 var (
@@ -30,8 +33,10 @@ var (
 	n = flag.Int("n", 200, "")
 	q = flag.Float64("q", 0, "")
 	i = flag.Duration("i", time.Second, "")
+	z = flag.Duration("z", 0, "")
 	name = flag.String("name", "", "")
 	config = flag.String("config", "", "")
+	p = flag.Bool("pprof", false, "")
 
 	cpus = flag.Int("cpus", runtime.GOMAXPROCS(-1), "")
 )
@@ -44,10 +49,14 @@ Options:
       be smaller than the concurrency level. Default is 50.
   -q  Rate limit, in queries per second (QPS). Default is no rate limit.
 
-  -i  Interval of collector report, unit second. Default is 1 second
+  -i  Interval of collector report, unit second. Default is 1 second.
+  -z  Duration of application to send requests. When duration is reached,
+      application stops and exits. If duration is specified, n is ignored.
+      Examples: -z 10s -z 3m.
 
   -name Name of executor.
   -config Executor config json file.
+  -pporf go pprof.
   
 
   -cpus                 Number of used cpu cores.
@@ -67,9 +76,17 @@ func main() {
 	q := *q
 	executor := *name
 	interval := *i
+	dur := *z
 
-	if num <= 0 || conc <= 0 || interval <= time.Millisecond {
-		usageAndExit("-n and -c cannot be smaller than 1.")
+	if dur > 0 {
+		if conc <= 0 {
+			usageAndExit("-n and -c cannot be smaller than 1.")
+		}
+		num = math.MaxInt32
+	} else {
+		if num <= 0 || conc <= 0 {
+			usageAndExit("-n and -c cannot be smaller than 1.")
+		}
 	}
 
 	if interval <= time.Millisecond {
@@ -105,13 +122,54 @@ func main() {
 		ExecutorName:       executor,
 		Config:             cfg,
 	}
-
+    ctx, cancel := context.WithCancel(context.Background())
+    go func() {
+    	var f *os.File
+    	var err error
+    	var start time.Time
+    	timer := time.NewTimer(time.Second * 5)
+    	for {
+    		select {
+    		case <-ctx.Done():
+    			if f != nil {
+    				pprof.StopCPUProfile()
+    				f.Close()
+    				f = nil
+			    }
+			    return
+			 case <-timer.C:
+			 	if f == nil {
+			 		f, err = os.Create(fmt.Sprintf("pprof_%s", time.Now().Format(time.RFC3339)))
+			 		if err != nil {
+			 			timer.Reset(time.Second * 5)
+			 			continue
+				    }
+				    start = time.Now()
+				    pprof.StartCPUProfile(f)
+			    }
+			    if time.Since(start) > time.Second * 30 {
+				    if f != nil {
+					    pprof.StopCPUProfile()
+					    f.Close()
+					    f = nil
+				    }
+			    }
+			    timer.Reset(time.Second * 5)
+		    }
+	    }
+    }()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		<-c
 		w.Stop()
+		cancel()
 	}()
+	if dur > 0 {
+		time.Sleep(dur)
+		w.Stop()
+		cancel()
+	}
 	w.Run()
 }
 
