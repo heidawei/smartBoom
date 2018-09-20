@@ -124,6 +124,9 @@ func main() {
 	}
     ctx, cancel := context.WithCancel(context.Background())
     go func() {
+    	if !*p {
+    		return
+	    }
     	var f *os.File
     	var err error
     	var start time.Time
