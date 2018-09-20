@@ -131,6 +131,9 @@ func main() {
     	var err error
     	var start time.Time
     	timer := time.NewTimer(time.Second * 5)
+    	defer func() {
+    		recover()
+	    }()
     	for {
     		select {
     		case <-ctx.Done():
