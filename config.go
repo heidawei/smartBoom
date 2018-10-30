@@ -18,5 +18,5 @@ import (
 	//_ "github.com/heidawei/actuator/partitionserver"
 	_ "github.com/heidawei/actuator/scorch"
 	_ "github.com/heidawei/actuator/upsidedown"
-	_ "github.com/blevesearch/bleve/index/store/rocksdb"
+	_ "github.com/heidawei/actuator/caprice"
 )

@@ -26,6 +26,7 @@ import (
 	"github.com/heidawei/smartBoom/worker"
 	"github.com/dustin/gojson"
 	"runtime/pprof"
+	"sync"
 )
 
 var (
@@ -123,7 +124,10 @@ func main() {
 		Config:             cfg,
 	}
     ctx, cancel := context.WithCancel(context.Background())
+    var wg sync.WaitGroup
+    wg.Add(1)
     go func() {
+    	defer wg.Done()
     	if !*p {
     		return
 	    }
@@ -170,13 +174,19 @@ func main() {
 		<-c
 		w.Stop()
 		cancel()
+		wg.Wait()
 	}()
 	if dur > 0 {
-		time.Sleep(dur)
-		w.Stop()
-		cancel()
+		go func() {
+			time.Sleep(dur)
+			w.Stop()
+			cancel()
+			wg.Wait()
+		}()
 	}
 	w.Run()
+	cancel()
+	wg.Wait()
 }
 
 func errAndExit(msg string) {
